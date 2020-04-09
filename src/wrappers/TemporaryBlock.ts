@@ -1,8 +1,8 @@
 import Ajv from 'ajv';
 
-import { TemporaryBlocksArray } from '../types/TemporaryBlocksArray';
+import { TemporaryBlock } from '../types/TemporaryBlock';
 
-const ajv = new Ajv();
+import PayloadWrapper from './PayloadWrapper';
 
 const parentSchema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -46,7 +46,7 @@ const parentSchema = {
                     "description": "Array with the intervals to be blocked",
                     "type": "array",
                     "items": {
-                        "$ref": "TemporaryBlocksArray#/definitions/Interval"
+                        "$ref": "TemporaryBlock#/definitions/Interval"
                     }
                 }
             },
@@ -55,37 +55,21 @@ const parentSchema = {
                 "intervals",
                 "isEntireDay"
             ]
-        },
-        "TemporaryBlocksArray": {
-            "type": "array",
-            "items": {
-                "$ref": "TemporaryBlocksArray#/definitions/TemporaryBlock"
-            }
         }
     },
-    "$id": "TemporaryBlocksArray"
+    "$id": "TemporaryBlock"
 };
 
-const validate = ajv
-  .addSchema(parentSchema, 'TemporaryBlocksArray')
-  .compile(parentSchema.definitions.TemporaryBlocksArray);
+const validate = new Ajv()
+  .addSchema(parentSchema, 'TemporaryBlock')
+  .compile(parentSchema.definitions.TemporaryBlock);
 
-export default class TemporaryBlocksArrayInterface {
-  private readonly payload: TemporaryBlocksArray
+export class TemporaryBlockWrapper extends PayloadWrapper<TemporaryBlock> {
+    isValid() {
+        return <boolean> validate(this.getPayload());
+    }
 
-  constructor(payload: TemporaryBlocksArray) {
-    this.payload = payload;
-  }
-
-  isValid() {
-    return validate(this.payload)
-  }
-
-  getPayload() {
-    return this.payload
-  }
-
-  getErrors() {
-      return validate.errors;
-  }
+    getErrors() {
+        return validate.errors;
+    }
 }

@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./build && tsc",
     "start:dev": "ts-node ./src/index.js",
-    "start": "npm run build && node build/index.js"
+    "start": "npm run build && node build/index.js",
+    "generate": "node script.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^13.11.0",
+    "nodemon": "^2.0.3",
     "rimraf": "^3.0.2",
     "ts-node": "^8.8.2",
     "typescript": "^3.8.3",

@@ -1,7 +1,8 @@
-const Ajv = require('ajv');
-const fs = require('fs');
+import Ajv from 'ajv';
 
-const ajv = new Ajv();
+import { TemporaryBlocksArray } from '../types/TemporaryBlocksArray';
+
+import PayloadWrapper from './PayloadWrapper';
 
 const parentSchema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -45,7 +46,7 @@ const parentSchema = {
                     "description": "Array with the intervals to be blocked",
                     "type": "array",
                     "items": {
-                        "$ref": "TemporaryBlock#/definitions/Interval"
+                        "$ref": "TemporaryBlocksArray#/definitions/Interval"
                     }
                 }
             },
@@ -54,15 +55,27 @@ const parentSchema = {
                 "intervals",
                 "isEntireDay"
             ]
+        },
+        "TemporaryBlocksArray": {
+            "type": "array",
+            "items": {
+                "$ref": "TemporaryBlocksArray#/definitions/TemporaryBlock"
+            }
         }
     },
-    "$id": "TemporaryBlock"
+    "$id": "TemporaryBlocksArray"
 };
 
-ajv.addSchema(parentSchema, 'TemporaryBlock');
+const validate = new Ajv()
+  .addSchema(parentSchema, 'TemporaryBlocksArray')
+  .compile(parentSchema.definitions.TemporaryBlocksArray);
 
-const validators = Object.keys(parentSchema.definitions).reduce((validators, key) => (
-    { ...validators, [`validate${key}`]: ajv.compile(parentSchema.definitions[key]) }
-), {});
+export class TemporaryBlocksArrayWrapper extends PayloadWrapper<TemporaryBlocksArray> {
+    isValid() {
+        return <boolean> validate(this.getPayload());
+    }
 
-module.exports = validators;
+    getErrors() {
+        return validate.errors;
+    }
+}

@@ -3,8 +3,8 @@ const fs = require('fs');
 
 const TJS = require("typescript-json-schema");
 
-const baseDirectory = join(__dirname, 'types');
-const writeBaseDirectory = join(__dirname, 'json-types');
+const baseDirectory = join(__dirname, 'src', 'types');
+const writeBaseDirectory = join(__dirname, 'src', 'wrappers');
 
 // optionally pass argument to schema generator
 const settings = {
@@ -16,20 +16,27 @@ const compilerOptions = {
     strictNullChecks: true,
 };
 
-const code = (parentSchema, id) => `const Ajv = require('ajv');
-const fs = require('fs');
+const code = (parentSchema, id) => `import Ajv from 'ajv';
 
-const ajv = new Ajv();
+import { ${id} } from '../types/${id}';
+
+import PayloadWrapper from './PayloadWrapper';
 
 const parentSchema = ${parentSchema};
 
-ajv.addSchema(parentSchema, '${id}');
+const validate = new Ajv()
+  .addSchema(parentSchema, '${id}')
+  .compile(parentSchema.definitions.${id});
 
-const validators = Object.keys(parentSchema.definitions).reduce((validators, key) => (
-    { ...validators, [\`validate\${key}\`]: ajv.compile(parentSchema.definitions[key]) }
-), {});
+export class ${id}Wrapper extends PayloadWrapper<${id}> {
+    isValid() {
+        return <boolean> validate(this.getPayload());
+    }
 
-module.exports = validators;
+    getErrors() {
+        return validate.errors;
+    }
+}
 `;
 
 fs.readdir(baseDirectory, (err, files) => {
@@ -47,7 +54,7 @@ fs.readdir(baseDirectory, (err, files) => {
 
 		const schemaString = JSON.stringify(schema, null, 4);
 
-		fs.writeFile(join(writeBaseDirectory, `${fileBaseName}.js`), code(schemaString, fileBaseName), 'utf8', err => {
+		fs.writeFile(join(writeBaseDirectory, `${fileBaseName}.ts`), code(schemaString, fileBaseName), 'utf8', err => {
 		    if (err) throw err;
 		});
 	});

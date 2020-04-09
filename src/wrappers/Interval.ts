@@ -1,7 +1,8 @@
-const Ajv = require('ajv');
-const fs = require('fs');
+import Ajv from 'ajv';
 
-const ajv = new Ajv();
+import { Interval } from '../types/Interval';
+
+import PayloadWrapper from './PayloadWrapper';
 
 const parentSchema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -29,10 +30,16 @@ const parentSchema = {
     "$id": "Interval"
 };
 
-ajv.addSchema(parentSchema, 'Interval');
+const validate = new Ajv()
+  .addSchema(parentSchema, 'Interval')
+  .compile(parentSchema.definitions.Interval);
 
-const validators = Object.keys(parentSchema.definitions).reduce((validators, key) => (
-    { ...validators, [`validate${key}`]: ajv.compile(parentSchema.definitions[key]) }
-), {});
+export class IntervalWrapper extends PayloadWrapper<Interval> {
+    isValid() {
+        return <boolean> validate(this.getPayload());
+    }
 
-module.exports = validators;
+    getErrors() {
+        return validate.errors;
+    }
+}
