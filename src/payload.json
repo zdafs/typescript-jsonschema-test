@@ -1,0 +1,12 @@
+[
+  {
+    "days": ["2001-01-01"],
+    "intervals": [
+      {
+        "startTime": "08:00",
+        "endTime": "09:00"
+      }
+    ],
+    "isEntireDay": false
+  }
+]

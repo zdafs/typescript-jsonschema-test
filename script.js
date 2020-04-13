@@ -1,10 +1,10 @@
-const { resolve, join, basename, extname } = require("path");
+const { join, basename, extname } = require("path");
 const fs = require('fs');
 
 const TJS = require("typescript-json-schema");
 
 const baseDirectory = join(__dirname, 'src', 'types');
-const writeBaseDirectory = join(__dirname, 'src', 'wrappers');
+const writeBaseDirectory = join(__dirname, 'src', 'validators');
 
 // optionally pass argument to schema generator
 const settings = {
@@ -20,22 +20,14 @@ const code = (parentSchema, id) => `import Ajv from 'ajv';
 
 import { ${id} } from '../types/${id}';
 
-import PayloadWrapper from './PayloadWrapper';
-
 const parentSchema = ${parentSchema};
 
 const validate = new Ajv()
   .addSchema(parentSchema, '${id}')
   .compile(parentSchema.definitions.${id});
 
-export class ${id}Wrapper extends PayloadWrapper<${id}> {
-    isValid() {
-        return <boolean> validate(this.getPayload());
-    }
-
-    getErrors() {
-        return validate.errors;
-    }
+export function isValid(payload: any): payload is ${id} {
+	return (<boolean> validate(payload));
 }
 `;
 

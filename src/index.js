@@ -1,30 +1,17 @@
-const { TemporaryBlocksArrayWrapper } = require('./wrappers/TemporaryBlocksArray');
+const { isValid } = require('./validators/TemporaryBlocksArray');
+const fs = require('fs');
+const { join } = require('path');
 
-const payload = [
-  {
-    days: ['2001-01-01'],
-    intervals: [
-      {
-        startTime: '08:00',
-        endTime: '09:00',
-      },
-    ],
-    isEntireDay: false,
-  },
-];
+const f = join(__dirname, 'payload.json');
+const payload = JSON.parse(fs.readFileSync(f));
 
-const maybeTemporaryBlockArray = new TemporaryBlocksArrayWrapper(payload);
-
-const isPayloadValid = maybeTemporaryBlockArray.isValid();
-if (isPayloadValid) {
-  const temporaryBlockArray = maybeTemporaryBlockArray.getPayload();
-
-  console.log(temporaryBlockArray.length);
-  const length = temporaryBlockArray.length;
-  for (let i = 0; i < length; i++) {
-    console.log(temporaryBlockArray[i]);
+const test = () => {
+  if(!isValid(payload)) {
+    console.log('error');
+    return;
   }
-} else {
-  console.log('Not a valid payload');
-  console.log(maybeTemporaryBlockArray.getErrors());
-}
+
+  console.log(`days: ${JSON.stringify(payload[0].days)}, intervals: ${payload[0].intervals}, isEntireDay: ${payload[0].isEntireDay}`);
+};
+
+test();

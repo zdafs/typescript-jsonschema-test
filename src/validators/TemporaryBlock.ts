@@ -2,8 +2,6 @@ import Ajv from 'ajv';
 
 import { TemporaryBlock } from '../types/TemporaryBlock';
 
-import PayloadWrapper from './PayloadWrapper';
-
 const parentSchema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
@@ -64,12 +62,6 @@ const validate = new Ajv()
   .addSchema(parentSchema, 'TemporaryBlock')
   .compile(parentSchema.definitions.TemporaryBlock);
 
-export class TemporaryBlockWrapper extends PayloadWrapper<TemporaryBlock> {
-    isValid() {
-        return <boolean> validate(this.getPayload());
-    }
-
-    getErrors() {
-        return validate.errors;
-    }
+export function isValid(payload: any): payload is TemporaryBlock {
+	return (<boolean> validate(payload));
 }

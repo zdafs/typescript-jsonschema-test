@@ -2,8 +2,6 @@ import Ajv from 'ajv';
 
 import { TemporaryBlocksArray } from '../types/TemporaryBlocksArray';
 
-import PayloadWrapper from './PayloadWrapper';
-
 const parentSchema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
@@ -70,12 +68,6 @@ const validate = new Ajv()
   .addSchema(parentSchema, 'TemporaryBlocksArray')
   .compile(parentSchema.definitions.TemporaryBlocksArray);
 
-export class TemporaryBlocksArrayWrapper extends PayloadWrapper<TemporaryBlocksArray> {
-    isValid() {
-        return <boolean> validate(this.getPayload());
-    }
-
-    getErrors() {
-        return validate.errors;
-    }
+export function isValid(payload: any): payload is TemporaryBlocksArray {
+	return (<boolean> validate(payload));
 }
